@@ -5,7 +5,7 @@
 #   NOTARY_PROFILE=steamshelf ./release.sh # Developer ID 서명 + 공증 + 스테이플
 #
 # 환경 변수
-#   VERSION          기본 1.0.0
+#   VERSION          기본 1.1.0
 #   SIGN_IDENTITY    비우면 키체인의 "Developer ID Application"을 자동으로 찾는다
 #   NOTARY_PROFILE   xcrun notarytool store-credentials 로 저장한 프로필 이름
 set -euo pipefail
