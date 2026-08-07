@@ -1,5 +1,6 @@
 {
   "name": "Steam Shelf",
+  "platform": "macos",
   "repository": "https://github.com/2JIHAN/steam-shelf",
   "build": "./build.sh \"$STAYS_LOCAL_OUT\"",
   "bundle": "Steam Shelf.app",
