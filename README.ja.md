@@ -10,6 +10,7 @@
 <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
 <img src="https://img.shields.io/badge/dependencies-none-2ea44f" alt="No dependencies">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
+<a href="https://github.com/2JIHAN/stays-local#registry"><img src="https://raw.githubusercontent.com/2JIHAN/stays-local/main/badges/steam-shelf.svg" alt="stays local: verified"></a>
 
 <a href="README.md">English</a>
 | <a href="README.ko.md">한국어</a>
@@ -86,7 +87,7 @@ Swift 6（Xcode Command Line Tools）が必要です。署名済みリリース�
 
 ## ネットワーク不使用
 
-Steam Shelf はネットワーク接続を一切開きません。ディスク上の Steam のファイルを読み、URL スキームでゲームを起動するだけで、外部へ送るものはありません。テレメトリも、アップデート確認も、アートワークのダウンロードもありません。
+Steam Shelf はネットワーク接続を一切開きません。[stays local](https://github.com/2JIHAN/stays-local) がこのリポジトリを自前の CI でビルドし、バンドル内のすべての Mach-O を検査して認証しています。ディスク上の Steam のファイルを読み、URL スキームでゲームを起動するだけで、外部へ送るものはありません。テレメトリも、アップデート確認も、アートワークのダウンロードもありません。
 
 自分で検証できます。
 

@@ -1,0 +1,12 @@
+{
+  "name": "Steam Shelf",
+  "repository": "https://github.com/2JIHAN/steam-shelf",
+  "build": "./build.sh \"$STAYS_LOCAL_OUT\"",
+  "bundle": "Steam Shelf.app",
+  "declared_urls": [
+    {
+      "url": "store.steampowered.com",
+      "reason": "Handed to the user's browser by NSWorkspace when they pick Open Store Page from the context menu. The app itself never connects."
+    }
+  ]
+}

@@ -10,6 +10,7 @@
 <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
 <img src="https://img.shields.io/badge/dependencies-none-2ea44f" alt="No dependencies">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
+<a href="https://github.com/2JIHAN/stays-local#registry"><img src="https://raw.githubusercontent.com/2JIHAN/stays-local/main/badges/steam-shelf.svg" alt="stays local: verified"></a>
 
 **English**
 | <a href="README.ko.md">한국어</a>
@@ -86,7 +87,7 @@ Everything else in `~/Applications` is left alone. If a normal app already has t
 
 ## No Network
 
-Steam Shelf opens no network connections. It reads Steam's files on disk and launches games through a URL scheme; nothing is sent anywhere, and there is no telemetry, update check, or artwork download.
+Steam Shelf opens no network connections. This is certified by [stays local](https://github.com/2JIHAN/stays-local), which builds this repository in its own CI and scans every Mach-O in the bundle. It reads Steam's files on disk and launches games through a URL scheme; nothing is sent anywhere, and there is no telemetry, update check, or artwork download.
 
 Run the checks yourself:
 

@@ -10,6 +10,7 @@
 <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
 <img src="https://img.shields.io/badge/dependencies-none-2ea44f" alt="No dependencies">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
+<a href="https://github.com/2JIHAN/stays-local#registry"><img src="https://raw.githubusercontent.com/2JIHAN/stays-local/main/badges/steam-shelf.svg" alt="stays local: verified"></a>
 
 <a href="README.md">English</a>
 | <a href="README.ko.md">한국어</a>
@@ -86,7 +87,7 @@ ARCHS=arm64 ./build.sh            # 跳过 Intel 切片
 
 ## 不使用网络
 
-Steam Shelf 不会建立任何网络连接。它只读取磁盘上 Steam 的文件，并通过 URL scheme 启动游戏，没有任何数据外发，也没有遥测、更新检查或封面下载。
+Steam Shelf 不会建立任何网络连接。这一点由 [stays local](https://github.com/2JIHAN/stays-local) 认证——它在自己的 CI 中构建本仓库，并扫描包内每一个 Mach-O。它只读取磁盘上 Steam 的文件，并通过 URL scheme 启动游戏，没有任何数据外发，也没有遥测、更新检查或封面下载。
 
 你可以自己验证：
 
