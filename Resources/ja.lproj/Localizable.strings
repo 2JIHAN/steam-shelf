@@ -1,0 +1,45 @@
+/* Steam Shelf — 日本語 */
+
+/* 空の状態・エラー */
+"Steam is not installed" = "Steam がインストールされていません";
+"Could not find ~/Library/Application Support/Steam." = "~/Library/Application Support/Steam が見つかりませんでした。";
+"Reading your library…" = "ライブラリを読み込み中…";
+"No games installed" = "インストール済みのゲームがありません";
+"Games you install in Steam appear here automatically." = "Steam でゲームをインストールすると、ここに自動で表示されます。";
+
+/* ツールバー */
+"Search games" = "ゲームを検索";
+"Sort" = "並べ替え";
+"Name" = "名前順";
+"Last Played" = "最終プレイ順";
+"Size" = "容量順";
+"Refresh" = "再読み込み";
+"Sync Shortcuts" = "ショートカットを同期";
+"Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash." = "インストール済みゲームの .app ショートカットを ~/Applications に作成し、アンインストール済みゲームのショートカットはゴミ箱へ移動します。";
+
+/* ウィンドウのサブタイトル。日本語は単複の区別がないため 2 つのキーは同じ形になる。 */
+"1 game" = "1 件のゲーム";
+"%lld games" = "%lld 件のゲーム";
+"%1$lld of %2$@" = "%2$@ 中 %1$lld 件";
+
+/* ゲームタイル */
+"Never played" = "プレイ履歴なし";
+
+/* コンテキストメニュー */
+"Play" = "プレイ";
+"Reveal Install Folder" = "インストールフォルダを表示";
+"Open Store Page" = "ストアページを開く";
+"Copy AppID (%@)" = "AppID をコピー (%@)";
+
+/* 同期結果 */
+"Shortcut sync complete" = "ショートカットの同期が完了しました";
+"OK" = "OK";
+"Open Applications Folder" = "Applications フォルダを開く";
+"Nothing to change. Your shortcuts are already up to date." = "変更はありません。ショートカットはすでに最新です。";
+"Created (%lld)" = "新規作成 (%lld)";
+"Updated (%lld)" = "更新 (%lld)";
+"Moved to Trash (%lld)" = "ゴミ箱へ移動 (%lld)";
+"Skipped (%lld)" = "スキップ (%lld)";
+"%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — 同名のアプリが既に存在し、Steam のショートカットではありません";
+"%1$@ — could not be created: %2$@" = "%1$@ — 作成できませんでした: %2$@";
+"%1$@ — could not be removed: %2$@" = "%1$@ — 削除できませんでした: %2$@";

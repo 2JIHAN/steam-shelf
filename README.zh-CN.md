@@ -35,18 +35,32 @@ Steam Shelf 读取本地 Steam 库，把所有已安装的游戏以封面图网�
 - **实时跟随** —— 监听 `steamapps` 目录，安装或删除游戏后无需重启即可刷新网格。
 - **多库支持** —— 依据 `libraryfolders.vdf` 读取外置硬盘和第二库目录。
 - **搜索与排序** —— 按名称筛选，按最近游玩、名称或占用空间排序。
+- **多语言** —— 跟随系统语言，支持英语、韩语、日语和简体中文。
 
 ## 环境要求
 
 | | |
 |---|---|
 | 系统 | macOS 14 Sonoma 及以上 |
-| 工具链 | Swift 6（Xcode Command Line Tools） |
+| 机型 | Apple 芯片或 Intel（发行版为通用二进制） |
 | 其他 | 安装在默认位置的 Steam 桌面客户端 |
+| 构建时 | Swift 6（Xcode Command Line Tools） |
 
 ## 安装
 
-从源码构建：
+### 下载
+
+从[最新发行版](https://github.com/2JIHAN/steam-shelf/releases/latest)下载 `SteamShelf-x.y.z-universal.zip`，解压后把 **Steam Shelf.app** 移动到「应用程序」文件夹。
+
+该应用只做了 ad-hoc 签名，**未经过公证（notarization）**，因此首次打开时会被 macOS 拦截。清除一次隔离属性即可：
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+```
+
+或者打开**系统设置 → 隐私与安全性**，找到关于 Steam Shelf 的提示，点击**仍要打开**。
+
+### 从源码构建
 
 ```bash
 git clone https://github.com/2JIHAN/steam-shelf.git
@@ -54,17 +68,14 @@ cd steam-shelf
 ./build.sh
 ```
 
-应用会生成在 `~/Applications/Steam Shelf.app`。若要安装到别处，传入目标目录：
+应用会生成在 `~/Applications/Steam Shelf.app`。若要安装到别处或指定架构：
 
 ```bash
-./build.sh /Applications
+./build.sh /Applications          # 安装到 /Applications
+ARCHS=arm64 ./build.sh            # 跳过 Intel 切片，构建更快
 ```
 
-构建产物使用 ad-hoc 签名。由于是本机编译，不会带上隔离属性，Gatekeeper 不会拦截。如果你通过压缩包或下载的方式移动过该应用，可用以下命令清除属性：
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
-```
+本机构建的应用不会带上隔离属性，Gatekeeper 不会拦截。
 
 ## 使用
 
@@ -114,19 +125,35 @@ xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
 | 保持同步 | 用 `DispatchSource` 监听各 `steamapps` 目录，变动时重新加载 |
 | 图标 | 将封面裁成正方形，通过 ImageIO 写出 `.icns` |
 
+## 支持的语言
+
+界面跟随 macOS 系统语言，未覆盖的语言回退到英语。
+
+| 语言 | 状态 |
+|---|---|
+| English | 开发语言 |
+| 한국어 | 完整 |
+| 日本語 | 完整 |
+| 简体中文 | 完整 |
+
+若要新增语言，把 `Resources/en.lproj/Localizable.strings` 复制到 `Resources/<语言代码>.lproj/`，只翻译每行等号右侧的内容，再把语言代码加入 `build.sh` 的 `CFBundleLocalizations`。无需改动 Swift 代码。
+
 ## 项目结构
 
 ```
 Sources/
   App.swift            应用入口与菜单命令
-  ContentView.swift    网格界面与游戏卡片
+  ContentView.swift    网格界面、游戏卡片、同步结果文案
   Store.swift          状态管理、封面加载、目录监听
   SteamLibrary.swift   游戏库与清单扫描
   Artwork.swift        封面查找、CDN 回退、.icns 生成
   ShortcutSync.swift   .app 快捷方式的创建与清理
   VDF.swift            Steam KeyValues 解析器
+Resources/
+  en.lproj, ko.lproj, ja.lproj, zh-Hans.lproj
 make_icon.swift        应用图标生成器（.icns / .png）
 build.sh               构建脚本
+release.sh             打包用于发行的通用构建
 ```
 
 ## 常见问题

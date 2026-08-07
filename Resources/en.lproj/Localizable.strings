@@ -1,0 +1,45 @@
+/* Steam Shelf — English (development language) */
+
+/* Empty and error states */
+"Steam is not installed" = "Steam is not installed";
+"Could not find ~/Library/Application Support/Steam." = "Could not find ~/Library/Application Support/Steam.";
+"Reading your library…" = "Reading your library…";
+"No games installed" = "No games installed";
+"Games you install in Steam appear here automatically." = "Games you install in Steam appear here automatically.";
+
+/* Toolbar */
+"Search games" = "Search games";
+"Sort" = "Sort";
+"Name" = "Name";
+"Last Played" = "Last Played";
+"Size" = "Size";
+"Refresh" = "Refresh";
+"Sync Shortcuts" = "Sync Shortcuts";
+"Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash." = "Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash.";
+
+/* Window subtitle. "1 game" is split out so English reads correctly in the singular. */
+"1 game" = "1 game";
+"%lld games" = "%lld games";
+"%1$lld of %2$@" = "%1$lld of %2$@";
+
+/* Game tile */
+"Never played" = "Never played";
+
+/* Context menu */
+"Play" = "Play";
+"Reveal Install Folder" = "Reveal Install Folder";
+"Open Store Page" = "Open Store Page";
+"Copy AppID (%@)" = "Copy AppID (%@)";
+
+/* Sync result */
+"Shortcut sync complete" = "Shortcut sync complete";
+"OK" = "OK";
+"Open Applications Folder" = "Open Applications Folder";
+"Nothing to change. Your shortcuts are already up to date." = "Nothing to change. Your shortcuts are already up to date.";
+"Created (%lld)" = "Created (%lld)";
+"Updated (%lld)" = "Updated (%lld)";
+"Moved to Trash (%lld)" = "Moved to Trash (%lld)";
+"Skipped (%lld)" = "Skipped (%lld)";
+"%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — an app with that name already exists and is not a Steam shortcut";
+"%1$@ — could not be created: %2$@" = "%1$@ — could not be created: %2$@";
+"%1$@ — could not be removed: %2$@" = "%1$@ — could not be removed: %2$@";

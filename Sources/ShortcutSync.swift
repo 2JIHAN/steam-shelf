@@ -7,24 +7,26 @@ enum ShortcutSync {
     /// 우리가 만든 번들임을 표시하는 Info.plist 키
     static let markerKey = "SteamShelfAppID"
 
+    /// 건너뛴 이유. 문장이 아니라 사유만 들고 있다가 표시할 때 번역한다.
+    enum SkipReason {
+        case nameTaken
+        case writeFailed(String)
+        case trashFailed(String)
+    }
+
+    struct Skipped {
+        let name: String
+        let reason: SkipReason
+    }
+
     struct Report {
         var created: [String] = []
         var updated: [String] = []
         var removed: [String] = []
-        var skipped: [String] = []
+        var skipped: [Skipped] = []
 
         var isEmpty: Bool {
             created.isEmpty && updated.isEmpty && removed.isEmpty && skipped.isEmpty
-        }
-
-        var summary: String {
-            if isEmpty { return "변경할 내용이 없습니다. 바로가기가 이미 최신 상태입니다." }
-            var lines: [String] = []
-            if !created.isEmpty { lines.append("새로 만듦 (\(created.count))\n  · " + created.joined(separator: "\n  · ")) }
-            if !updated.isEmpty { lines.append("갱신 (\(updated.count))\n  · " + updated.joined(separator: "\n  · ")) }
-            if !removed.isEmpty { lines.append("휴지통으로 이동 (\(removed.count))\n  · " + removed.joined(separator: "\n  · ")) }
-            if !skipped.isEmpty { lines.append("건너뜀 (\(skipped.count))\n  · " + skipped.joined(separator: "\n  · ")) }
-            return lines.joined(separator: "\n\n")
         }
     }
 
@@ -103,7 +105,7 @@ enum ShortcutSync {
             if alreadyThere {
                 let isManaged = existing.contains { $0.url.standardized == desiredURL.standardized }
                 guard isManaged else {
-                    report.skipped.append("\(desiredName) — Steam 바로가기가 아닌 앱이 이미 있음")
+                    report.skipped.append(Skipped(name: desiredName, reason: .nameTaken))
                     continue
                 }
                 try? fm.removeItem(at: desiredURL)
@@ -117,7 +119,8 @@ enum ShortcutSync {
                     report.created.append(game.name)
                 }
             } catch {
-                report.skipped.append("\(game.name) — \(error.localizedDescription)")
+                report.skipped.append(
+                    Skipped(name: game.name, reason: .writeFailed(error.localizedDescription)))
             }
         }
 
@@ -128,7 +131,8 @@ enum ShortcutSync {
                 try fm.trashItem(at: bundle.url, resultingItemURL: nil)
                 report.removed.append(name)
             } catch {
-                report.skipped.append("\(name) — 삭제 실패: \(error.localizedDescription)")
+                report.skipped.append(
+                    Skipped(name: name, reason: .trashFailed(error.localizedDescription)))
             }
         }
 

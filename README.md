@@ -35,18 +35,32 @@ It is a single SwiftUI binary with no third-party dependencies, built by one `sw
 - **Live library** — the `steamapps` folder is watched, so installing or removing a game updates the grid without a restart.
 - **Multiple libraries** — external drives and secondary library folders are read from `libraryfolders.vdf`.
 - **Search and sort** — filter by name; order by last played, name, or size on disk.
+- **Localized** — English, Korean, Japanese, and Simplified Chinese, following your system language.
 
 ## Requirements
 
 | | |
 |---|---|
 | OS | macOS 14 Sonoma or later |
-| Toolchain | Swift 6 (Xcode Command Line Tools) |
+| Mac | Apple silicon or Intel (the release is a universal binary) |
 | Other | Steam desktop client, installed at the default location |
+| To build | Swift 6 (Xcode Command Line Tools) |
 
 ## Installation
 
-Build from source:
+### Download
+
+Get `SteamShelf-x.y.z-universal.zip` from the [latest release](https://github.com/2JIHAN/steam-shelf/releases/latest), unzip it, and move **Steam Shelf.app** into your Applications folder.
+
+The app is ad-hoc signed but **not notarized**, so macOS blocks it the first time. Clear the quarantine flag once:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+```
+
+Or open **System Settings → Privacy & Security**, find the message about Steam Shelf, and click **Open Anyway**.
+
+### Build from source
 
 ```bash
 git clone https://github.com/2JIHAN/steam-shelf.git
@@ -57,14 +71,11 @@ cd steam-shelf
 The app lands in `~/Applications/Steam Shelf.app`. Pass a different directory to install elsewhere:
 
 ```bash
-./build.sh /Applications
+./build.sh /Applications          # install into /Applications
+ARCHS=arm64 ./build.sh            # skip the Intel slice for faster iteration
 ```
 
-The build is ad-hoc signed. Since you compiled it locally there is no quarantine flag and Gatekeeper will not complain. If you ever move the app through a zip or a download, clear the flag with:
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
-```
+A local build carries no quarantine flag, so Gatekeeper stays quiet.
 
 ## Usage
 
@@ -114,19 +125,35 @@ Everything else in `~/Applications` is left alone. If a normal app already occup
 | Staying current | A `DispatchSource` watches each `steamapps` folder and reloads on change |
 | Icons | Square-cropped cover art written to `.icns` through ImageIO |
 
+## Languages
+
+The interface follows your macOS system language and falls back to English.
+
+| Language | Status |
+|---|---|
+| English | Development language |
+| 한국어 | Complete |
+| 日本語 | Complete |
+| 简体中文 | Complete |
+
+To add one, copy `Resources/en.lproj/Localizable.strings` to `Resources/<code>.lproj/`, translate the right-hand side of each line, and add the code to `CFBundleLocalizations` in `build.sh`. No Swift changes are needed.
+
 ## Project Structure
 
 ```
 Sources/
   App.swift            App entry point and menu commands
-  ContentView.swift    Grid UI and game tiles
+  ContentView.swift    Grid UI, game tiles, sync report wording
   Store.swift          State, cover loading, folder watching
   SteamLibrary.swift   Library and manifest scanning
   Artwork.swift        Cover lookup, CDN fallback, .icns generation
   ShortcutSync.swift   .app shortcut creation and cleanup
   VDF.swift            Steam KeyValues parser
+Resources/
+  en.lproj, ko.lproj, ja.lproj, zh-Hans.lproj
 make_icon.swift        App icon generator (.icns and .png)
 build.sh               Build script
+release.sh             Packages a universal build for a release
 ```
 
 ## FAQ

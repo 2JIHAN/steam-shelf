@@ -1,0 +1,45 @@
+/* Steam Shelf — 한국어 */
+
+/* 빈 상태·오류 */
+"Steam is not installed" = "Steam이 설치되어 있지 않습니다";
+"Could not find ~/Library/Application Support/Steam." = "~/Library/Application Support/Steam 경로를 찾을 수 없습니다.";
+"Reading your library…" = "라이브러리를 읽는 중…";
+"No games installed" = "설치된 게임이 없습니다";
+"Games you install in Steam appear here automatically." = "Steam에서 게임을 설치하면 자동으로 나타납니다.";
+
+/* 툴바 */
+"Search games" = "게임 검색";
+"Sort" = "정렬";
+"Name" = "이름순";
+"Last Played" = "최근 플레이순";
+"Size" = "용량순";
+"Refresh" = "새로고침";
+"Sync Shortcuts" = "바로가기 동기화";
+"Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash." = "설치된 게임의 .app 바로가기를 ~/Applications에 만들고, 삭제된 게임의 바로가기는 휴지통으로 옮깁니다.";
+
+/* 창 부제. 한국어는 단수·복수 구분이 없어 두 키가 같은 형태를 가리킨다. */
+"1 game" = "게임 1개";
+"%lld games" = "게임 %lld개";
+"%1$lld of %2$@" = "%2$@ 중 %1$lld개";
+
+/* 게임 타일 */
+"Never played" = "플레이 기록 없음";
+
+/* 컨텍스트 메뉴 */
+"Play" = "실행";
+"Reveal Install Folder" = "설치 폴더 열기";
+"Open Store Page" = "상점 페이지 열기";
+"Copy AppID (%@)" = "AppID 복사 (%@)";
+
+/* 동기화 결과 */
+"Shortcut sync complete" = "바로가기 동기화 완료";
+"OK" = "확인";
+"Open Applications Folder" = "Applications 폴더 열기";
+"Nothing to change. Your shortcuts are already up to date." = "변경할 내용이 없습니다. 바로가기가 이미 최신 상태입니다.";
+"Created (%lld)" = "새로 만듦 (%lld)";
+"Updated (%lld)" = "갱신 (%lld)";
+"Moved to Trash (%lld)" = "휴지통으로 이동 (%lld)";
+"Skipped (%lld)" = "건너뜀 (%lld)";
+"%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — 같은 이름의 앱이 이미 있고 Steam 바로가기가 아님";
+"%1$@ — could not be created: %2$@" = "%1$@ — 생성 실패: %2$@";
+"%1$@ — could not be removed: %2$@" = "%1$@ — 삭제 실패: %2$@";

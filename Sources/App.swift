@@ -17,9 +17,9 @@ struct SteamShelfApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(after: .toolbar) {
-                Button("새로고침") { store.refresh() }
+                Button("Refresh") { store.refresh() }
                     .keyboardShortcut("r", modifiers: .command)
-                Button("바로가기 동기화") { store.syncShortcuts() }
+                Button("Sync Shortcuts") { store.syncShortcuts() }
                     .keyboardShortcut("s", modifiers: [.command, .shift])
             }
         }

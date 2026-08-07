@@ -18,9 +18,9 @@ struct Game: Identifiable, Hashable {
     }
 
     var lastPlayedText: String {
-        guard let lastPlayed else { return "플레이 기록 없음" }
+        guard let lastPlayed else { return String(localized: "Never played") }
         let f = RelativeDateTimeFormatter()
-        f.locale = Locale(identifier: "ko_KR")
+        f.locale = .autoupdatingCurrent
         f.unitsStyle = .short
         return f.localizedString(for: lastPlayed, relativeTo: Date())
     }

@@ -35,18 +35,32 @@ Steam Shelf はローカルの Steam ライブラリを読み取り、インス�
 - **ライブラリの自動追従** — `steamapps` フォルダを監視しているため、ゲームの追加・削除は再起動なしでグリッドに反映されます。
 - **複数ライブラリ対応** — `libraryfolders.vdf` をたどり、外付けドライブやセカンダリライブラリも読み込みます。
 - **検索と並べ替え** — 名前で絞り込み、最終プレイ・名前・使用容量の順で並べ替えます。
+- **多言語対応** — システム言語に合わせて英語・韓国語・日本語・簡体中文で表示されます。
 
 ## 動作環境
 
 | | |
 |---|---|
 | OS | macOS 14 Sonoma 以降 |
-| ツールチェーン | Swift 6（Xcode Command Line Tools） |
+| Mac | Apple シリコンまたは Intel（リリースはユニバーサルバイナリ） |
 | その他 | 既定の場所にインストールされた Steam デスクトップクライアント |
+| ビルド時 | Swift 6（Xcode Command Line Tools） |
 
 ## インストール
 
-ソースからビルドします。
+### ダウンロード
+
+[最新リリース](https://github.com/2JIHAN/steam-shelf/releases/latest)から `SteamShelf-x.y.z-universal.zip` を入手し、展開して **Steam Shelf.app** をアプリケーションフォルダへ移動してください。
+
+このアプリは ad-hoc 署名のみで、**公証（notarization）を受けていません。** そのため初回起動時に macOS がブロックします。隔離属性を一度だけ外してください。
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+```
+
+または **システム設定 → プライバシーとセキュリティ** を開き、Steam Shelf に関するメッセージから **このまま開く** をクリックします。
+
+### ソースからビルド
 
 ```bash
 git clone https://github.com/2JIHAN/steam-shelf.git
@@ -54,17 +68,14 @@ cd steam-shelf
 ./build.sh
 ```
 
-`~/Applications/Steam Shelf.app` に配置されます。別の場所に入れる場合はパスを渡してください。
+`~/Applications/Steam Shelf.app` に配置されます。別の場所に入れる場合やアーキテクチャを指定する場合は次のとおりです。
 
 ```bash
-./build.sh /Applications
+./build.sh /Applications          # /Applications にインストール
+ARCHS=arm64 ./build.sh            # Intel スライスを省いて高速ビルド
 ```
 
-ビルド成果物は ad-hoc 署名されます。自分でコンパイルしたものには隔離属性が付かないため、Gatekeeper に阻まれることはありません。zip やダウンロードを経由してアプリを移動した場合は、次のコマンドで属性を外してください。
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
-```
+自分でビルドしたアプリには隔離属性が付かないため、Gatekeeper に阻まれることはありません。
 
 ## 使い方
 
@@ -114,19 +125,35 @@ xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
 | 自動更新 | `DispatchSource` で各 `steamapps` フォルダを監視し、変更時に再読み込み |
 | アイコン | カバーアートを正方形に切り出し、ImageIO で `.icns` を書き出し |
 
+## 対応言語
+
+macOS のシステム言語に従い、未対応の言語では英語になります。
+
+| 言語 | 状態 |
+|---|---|
+| English | 開発言語 |
+| 한국어 | 完了 |
+| 日本語 | 完了 |
+| 简体中文 | 完了 |
+
+言語を追加するには、`Resources/en.lproj/Localizable.strings` を `Resources/<コード>.lproj/` にコピーし、各行の右辺だけを翻訳して、`build.sh` の `CFBundleLocalizations` にコードを追加します。Swift 側の変更は不要です。
+
 ## プロジェクト構成
 
 ```
 Sources/
   App.swift            アプリのエントリポイントとメニューコマンド
-  ContentView.swift    グリッド UI とゲームタイル
+  ContentView.swift    グリッド UI、ゲームタイル、同期結果の文面
   Store.swift          状態管理、カバー読み込み、フォルダ監視
   SteamLibrary.swift   ライブラリとマニフェストの走査
   Artwork.swift        カバー検索、CDN フォールバック、.icns 生成
   ShortcutSync.swift   .app ショートカットの作成と整理
   VDF.swift            Steam KeyValues パーサー
+Resources/
+  en.lproj, ko.lproj, ja.lproj, zh-Hans.lproj
 make_icon.swift        アプリアイコン生成（.icns / .png）
 build.sh               ビルドスクリプト
+release.sh             リリース用ユニバーサルビルドのパッケージング
 ```
 
 ## FAQ

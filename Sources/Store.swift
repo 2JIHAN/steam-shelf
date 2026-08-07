@@ -1,13 +1,23 @@
 import AppKit
 import Combine
 import Foundation
+import SwiftUI
 
 enum SortOrder: String, CaseIterable, Identifiable {
-    case name = "이름순"
-    case lastPlayed = "최근 플레이순"
-    case size = "용량순"
+    case name
+    case lastPlayed
+    case size
 
     var id: String { rawValue }
+
+    /// rawValue는 식별자로만 쓰고, 화면에 보이는 이름은 따로 번역한다.
+    var title: LocalizedStringKey {
+        switch self {
+        case .name: return "Name"
+        case .lastPlayed: return "Last Played"
+        case .size: return "Size"
+        }
+    }
 }
 
 @MainActor

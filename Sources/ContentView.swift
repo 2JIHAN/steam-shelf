@@ -10,11 +10,13 @@ struct ContentView: View {
         ZStack {
             backdrop
             if !store.steamInstalled {
-                message("Steam이 설치되어 있지 않습니다",
-                        detail: "~/Library/Application Support/Steam 경로를 찾을 수 없습니다.")
+                message("Steam is not installed",
+                        detail: "Could not find ~/Library/Application Support/Steam.")
             } else if store.games.isEmpty {
-                message(store.isLoading ? "라이브러리를 읽는 중…" : "설치된 게임이 없습니다",
-                        detail: store.isLoading ? "" : "Steam에서 게임을 설치하면 자동으로 나타납니다.")
+                message(store.isLoading ? "Reading your library…" : "No games installed",
+                        detail: store.isLoading
+                            ? nil
+                            : "Games you install in Steam appear here automatically.")
             } else {
                 grid
             }
@@ -23,19 +25,19 @@ struct ContentView: View {
         .navigationTitle("Steam Shelf")
         .navigationSubtitle(subtitle)
         .toolbar { toolbarItems }
-        .searchable(text: $store.searchText, placement: .toolbar, prompt: "게임 검색")
+        .searchable(text: $store.searchText, placement: .toolbar, prompt: Text("Search games"))
         .onAppear { store.refresh() }
-        .alert("바로가기 동기화 완료",
+        .alert("Shortcut sync complete",
                isPresented: Binding(
                    get: { store.syncReport != nil },
                    set: { if !$0 { store.syncReport = nil } })) {
-            Button("확인", role: .cancel) { store.syncReport = nil }
-            Button("Applications 폴더 열기") {
+            Button("OK", role: .cancel) { store.syncReport = nil }
+            Button("Open Applications Folder") {
                 NSWorkspace.shared.open(ShortcutSync.applicationsDir)
                 store.syncReport = nil
             }
         } message: {
-            Text(store.syncReport?.summary ?? "")
+            Text(store.syncReport.map(SyncReportFormatter.message) ?? "")
         }
     }
 
@@ -58,11 +60,11 @@ struct ContentView: View {
                              isLaunching: store.launchedGameID == game.appID)
                         .onTapGesture { store.launch(game) }
                         .contextMenu {
-                            Button("실행") { store.launch(game) }
-                            Button("설치 폴더 열기") { SteamLibrary.revealInFinder(game) }
-                            Button("상점 페이지 열기") { SteamLibrary.openStorePage(game) }
+                            Button("Play") { store.launch(game) }
+                            Button("Reveal Install Folder") { SteamLibrary.revealInFinder(game) }
+                            Button("Open Store Page") { SteamLibrary.openStorePage(game) }
                             Divider()
-                            Button("AppID 복사 (\(game.appID))") {
+                            Button("Copy AppID (\(game.appID))") {
                                 NSPasteboard.general.clearContents()
                                 NSPasteboard.general.setString(game.appID, forType: .string)
                             }
@@ -73,28 +75,37 @@ struct ContentView: View {
         }
     }
 
-    private func message(_ title: String, detail: String) -> some View {
+    private func message(_ title: LocalizedStringKey, detail: LocalizedStringKey?) -> some View {
         VStack(spacing: 10) {
             Text(title).font(.title3.weight(.medium)).foregroundStyle(.white)
-            if !detail.isEmpty {
+            if let detail {
                 Text(detail).font(.callout).foregroundStyle(.white.opacity(0.55))
             }
         }
     }
 
-    /// 창 제목 옆에 붙는 요약. 검색 중이면 필터 결과 수를 보여준다.
+    /// 창 제목 옆에 붙는 요약. 검색 중이면 필터 결과 수를 함께 보여준다.
     private var subtitle: String {
         let shown = store.visibleGames.count
         let total = store.games.count
         guard total > 0 else { return "" }
-        return shown == total ? "게임 \(total)개" : "게임 \(shown)개 / 전체 \(total)개"
+        let totalText = Self.gameCount(total)
+        guard shown != total else { return totalText }
+        return String(format: String(localized: "%1$lld of %2$@"), shown, totalText)
+    }
+
+    /// 영어의 단수/복수를 위해 키를 나눈다. 다른 언어는 두 키가 같은 문장을 가리킨다.
+    static func gameCount(_ count: Int) -> String {
+        count == 1
+            ? String(localized: "1 game")
+            : String(format: String(localized: "%lld games"), count)
     }
 
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
         ToolbarItem {
-            Picker("정렬", selection: $store.sortOrder) {
-                ForEach(SortOrder.allCases) { Text($0.rawValue).tag($0) }
+            Picker("Sort", selection: $store.sortOrder) {
+                ForEach(SortOrder.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.menu)
         }
@@ -102,7 +113,7 @@ struct ContentView: View {
             Button {
                 store.refresh()
             } label: {
-                Label("새로고침", systemImage: "arrow.clockwise")
+                Label("Refresh", systemImage: "arrow.clockwise")
             }
             .disabled(store.isLoading)
         }
@@ -113,11 +124,52 @@ struct ContentView: View {
                 if store.isSyncing {
                     ProgressView().controlSize(.small)
                 } else {
-                    Label("바로가기 동기화", systemImage: "square.and.arrow.down.on.square")
+                    Label("Sync Shortcuts", systemImage: "square.and.arrow.down.on.square")
                 }
             }
             .disabled(store.isSyncing || store.games.isEmpty)
-            .help("설치된 게임의 .app 바로가기를 ~/Applications에 만들고, 삭제된 게임의 바로가기는 휴지통으로 옮깁니다.")
+            .help("Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash.")
+        }
+    }
+}
+
+// MARK: - 동기화 결과 문장 조립
+
+/// 리포트는 구조화된 데이터로 오고, 사람이 읽을 문장은 여기서 만든다.
+/// 언어마다 어순이 다르므로 조립을 코드가 아니라 포맷 문자열에 맡긴다.
+enum SyncReportFormatter {
+    static func message(_ report: ShortcutSync.Report) -> String {
+        guard !report.isEmpty else {
+            return String(localized: "Nothing to change. Your shortcuts are already up to date.")
+        }
+        var blocks: [String] = []
+        appendBlock(&blocks, "Created (%lld)", report.created)
+        appendBlock(&blocks, "Updated (%lld)", report.updated)
+        appendBlock(&blocks, "Moved to Trash (%lld)", report.removed)
+        appendBlock(&blocks, "Skipped (%lld)", report.skipped.map(describe))
+        return blocks.joined(separator: "\n\n")
+    }
+
+    private static func appendBlock(
+        _ blocks: inout [String], _ headingKey: String.LocalizationValue, _ items: [String]
+    ) {
+        guard !items.isEmpty else { return }
+        let heading = String(format: String(localized: headingKey), items.count)
+        let body = items.map { "  · \($0)" }.joined(separator: "\n")
+        blocks.append("\(heading)\n\(body)")
+    }
+
+    private static func describe(_ skipped: ShortcutSync.Skipped) -> String {
+        switch skipped.reason {
+        case .nameTaken:
+            return String(format: String(localized: "%@ — an app with that name already exists and is not a Steam shortcut"),
+                          skipped.name)
+        case .writeFailed(let detail):
+            return String(format: String(localized: "%1$@ — could not be created: %2$@"),
+                          skipped.name, detail)
+        case .trashFailed(let detail):
+            return String(format: String(localized: "%1$@ — could not be removed: %2$@"),
+                          skipped.name, detail)
         }
     }
 }
