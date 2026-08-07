@@ -1,74 +1,158 @@
+<div align="center">
+
+<img src="docs/icon.png" width="180" alt="Steam Shelf">
+
 # Steam Shelf
 
-설치된 Steam 게임을 커버아트 그리드로 보여주고 클릭 한 번에 실행하는 macOS 앱.
-게임별 `.app` 바로가기를 `~/Applications`에 생성/정리하는 동기화 기능 포함.
+**Launch your installed Steam games like native macOS apps.**
 
-> A native macOS launcher for installed Steam games — cover-art grid, one-click launch,
-> and per-game `.app` shortcuts in `~/Applications` for Launchpad/Spotlight.
-> No Xcode project, no dependencies: one `swiftc` invocation.
+<img src="https://img.shields.io/badge/platform-macOS%2014%2B-000000?logo=apple&logoColor=white" alt="Platform">
+<img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
+<img src="https://img.shields.io/badge/dependencies-none-2ea44f" alt="No dependencies">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
 
-## 요구 사항
+**English**
+| <a href="README.ko.md">한국어</a>
+| <a href="README.ja.md">日本語</a>
+| <a href="README.zh-CN.md">简体中文</a>
 
-macOS 14+ · Swift 6 툴체인 (Xcode Command Line Tools) · Steam 데스크톱 클라이언트
+</div>
 
-## 빌드
+Steam Shelf reads your local Steam library and shows every installed game as a cover-art grid. Click a tile to play. One more click writes a real `.app` bundle for each game into `~/Applications`, so your games show up in Launchpad and Spotlight next to everything else — no Steam window in the way.
+
+It is a single SwiftUI binary with no third-party dependencies, built by one `swiftc` call. There is no Xcode project to open.
+
+<!-- Add a screenshot here: docs/screenshot.png -->
+
+## Features
+
+- **Cover-art grid** — artwork comes from Steam's own local cache, so it works offline; missing art is fetched once from the Steam CDN and cached.
+- **One-click launch** — tiles open `steam://rungameid/<appid>`, the official launch path, so cloud saves, playtime, and overlay all behave normally.
+- **Per-game `.app` shortcuts** — sync installed games into `~/Applications` with cover-art icons, ready for Launchpad and Spotlight.
+- **Safe cleanup** — shortcuts for uninstalled games are moved to the Trash, never hard-deleted, and only bundles Steam Shelf can prove it manages are ever touched.
+- **Live library** — the `steamapps` folder is watched, so installing or removing a game updates the grid without a restart.
+- **Multiple libraries** — external drives and secondary library folders are read from `libraryfolders.vdf`.
+- **Search and sort** — filter by name; order by last played, name, or size on disk.
+
+## Requirements
+
+| | |
+|---|---|
+| OS | macOS 14 Sonoma or later |
+| Toolchain | Swift 6 (Xcode Command Line Tools) |
+| Other | Steam desktop client, installed at the default location |
+
+## Installation
+
+Build from source:
 
 ```bash
-./build.sh            # → ~/Applications/Steam Shelf.app
-./build.sh /Applications   # 설치 위치 변경
+git clone https://github.com/2JIHAN/steam-shelf.git
+cd steam-shelf
+./build.sh
 ```
 
-Xcode 프로젝트 없이 `swiftc`만 사용한다. (macOS 14+, Swift 6)
+The app lands in `~/Applications/Steam Shelf.app`. Pass a different directory to install elsewhere:
 
-## 동작 방식
+```bash
+./build.sh /Applications
+```
 
-| 기능 | 방식 |
+The build is ad-hoc signed. Since you compiled it locally there is no quarantine flag and Gatekeeper will not complain. If you ever move the app through a zip or a download, clear the flag with:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+```
+
+## Usage
+
+| Action | Result |
 |---|---|
-| 게임 목록 | `steamapps/libraryfolders.vdf` → 각 라이브러리의 `appmanifest_*.acf` 파싱 |
-| 설치 판정 | `steamapps/common/<installdir>` 실제 존재 여부 (다운로드 대기 항목 제외) |
-| 커버아트 | `appcache/librarycache/<appid>/**/library_600x900·capsule·header` → 없으면 Steam CDN에서 받아 `~/Library/Application Support/SteamShelf/covers`에 캐시 |
-| 실행 | `steam://rungameid/<appid>` |
-| 자동 갱신 | `steamapps` 폴더를 DispatchSource로 감시 → 설치/삭제 시 목록 반영 |
+| Click a tile | Launch the game |
+| Right-click a tile | Launch · Reveal install folder · Open store page · Copy AppID |
+| <kbd>⌘</kbd><kbd>R</kbd> | Reload the library |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd> | Sync shortcuts |
+| Search field | Filter by game name |
+| Sort menu | Last played · Name · Size on disk |
 
-## 바로가기 동기화 (⇧⌘S)
+## Shortcut Sync
 
-`~/Applications`에 게임 이름의 `.app` 번들을 만든다. Launchpad·Spotlight에서 게임 이름으로 바로 실행 가능.
+Press <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd> or hit the toolbar button. Steam Shelf writes one `.app` bundle per installed game into `~/Applications`:
 
-- 번들 내용: `run.sh`(= `open steam://rungameid/<appid>`) + 커버아트로 만든 `icon.icns`
-- 설치된 게임 → 생성/갱신, 이름이 바뀌면 옛 번들 정리
-- **삭제된 게임 → 휴지통으로 이동** (완전 삭제 아님, 복구 가능)
+```
+~/Applications/Hollow Knight - Silksong.app
+└── Contents
+    ├── Info.plist                 # SteamShelfAppID marker + game metadata
+    ├── MacOS/run.sh               # open "steam://rungameid/1030300"
+    └── Resources/icon.icns        # generated from the game's cover art
+```
 
-### 안전장치
+Characters that are illegal in filenames are replaced — a game named `Hollow Knight: Silksong` becomes `Hollow Knight - Silksong.app`. Spotlight still finds it by name.
 
-정리 대상으로 인식하는 번들은 두 종류뿐이다.
+### What it touches
 
-1. 우리가 만든 것 — `Info.plist`에 `SteamShelfAppID` 키 존재
-2. Steam이 "Add to Applications"로 만든 것 — `run.sh`에 `autogenerated file` 마커 + `steam://run` URL 존재
+Sync only recognizes two kinds of bundle as its own:
 
-그 외 일반 앱은 절대 건드리지 않는다. 같은 이름의 일반 앱이 이미 있으면 건너뛰고 리포트에 표시한다.
-
-## 조작
-
-| 동작 | 결과 |
+| Kind | How it is identified |
 |---|---|
-| 타일 클릭 | 게임 실행 |
-| 우클릭 | 실행 / 설치 폴더 열기 / 상점 페이지 / AppID 복사 |
-| ⌘R | 목록 새로고침 |
-| ⇧⌘S | 바로가기 동기화 |
-| 검색창 | 이름 필터 |
-| 정렬 | 최근 플레이순 · 이름순 · 용량순 |
+| Written by Steam Shelf | `SteamShelfAppID` key in `Info.plist` |
+| Written by Steam's "Add to Applications" | `autogenerated file` marker plus a `steam://run` URL in `run.sh` |
 
-## 파일
+Everything else in `~/Applications` is left alone. If a normal app already occupies the name a game wants, that game is skipped and reported instead of overwritten. Shortcuts for games you have uninstalled go to the Trash, so they are always recoverable.
+
+## How It Works
+
+| Concern | Approach |
+|---|---|
+| Finding libraries | Parse `steamapps/libraryfolders.vdf` for every library root |
+| Finding games | Parse each `appmanifest_*.acf` for appid, name, size, and last-played time |
+| Deciding what is installed | Require `steamapps/common/<installdir>` to actually exist, so queued downloads are excluded |
+| Cover art | Look for `library_600x900` / `library_capsule` / `library_header` under `appcache/librarycache/<appid>`, then fall back to the Steam CDN and cache it in `~/Library/Application Support/SteamShelf/covers` |
+| Launching | `steam://rungameid/<appid>` |
+| Staying current | A `DispatchSource` watches each `steamapps` folder and reloads on change |
+| Icons | Square-cropped cover art written to `.icns` through ImageIO |
+
+## Project Structure
 
 ```
 Sources/
-  App.swift           앱 진입점, 메뉴 명령
-  ContentView.swift   그리드 UI, 타일
-  Store.swift         상태 관리, 폴더 감시
-  SteamLibrary.swift  라이브러리/매니페스트 스캔
-  Artwork.swift       커버아트 조회·다운로드, .icns 생성
-  ShortcutSync.swift  .app 바로가기 생성/정리
-  VDF.swift           Steam KeyValues 파서
-make_icon.swift       앱 아이콘 생성기
-build.sh              빌드 스크립트
+  App.swift            App entry point and menu commands
+  ContentView.swift    Grid UI and game tiles
+  Store.swift          State, cover loading, folder watching
+  SteamLibrary.swift   Library and manifest scanning
+  Artwork.swift        Cover lookup, CDN fallback, .icns generation
+  ShortcutSync.swift   .app shortcut creation and cleanup
+  VDF.swift            Steam KeyValues parser
+make_icon.swift        App icon generator (.icns and .png)
+build.sh               Build script
 ```
+
+## FAQ
+
+### Does Steam still have to run?
+
+Yes. Steam Shelf does not bypass Steam — it asks Steam to launch the game, exactly like clicking Play in the client. That is what keeps cloud saves, achievements, playtime, and the overlay working. Steam starts automatically if it is not already running.
+
+### Is "Sync Shortcuts" safe to run?
+
+It only removes bundles that carry a Steam Shelf marker or Steam's own autogenerated marker, and removal means moving to the Trash. Your other apps are never inspected beyond reading `Info.plist`.
+
+### Where does the cover art come from?
+
+Steam already caches library artwork on disk, so that is checked first and nothing goes over the network. Only games without local artwork trigger a one-time download from the Steam CDN.
+
+### Why macOS 14 and later?
+
+The UI uses SwiftUI APIs introduced in Sonoma. Lowering the deployment target would mean reimplementing parts of the toolbar and window handling for little gain.
+
+### Are non-Steam games supported?
+
+Not currently. Steam Shelf reads Steam's own manifests, so only games installed through Steam appear. Games on secondary or external Steam libraries are fully supported.
+
+## Contributing
+
+Issues and pull requests are welcome.
+
+## License
+
+[MIT](LICENSE)
