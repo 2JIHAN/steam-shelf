@@ -12,7 +12,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-VERSION="${VERSION:-1.0.0}"
+VERSION="${VERSION:-1.1.0}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-}"
 STAGE="$(mktemp -d)"
 DIST="dist"

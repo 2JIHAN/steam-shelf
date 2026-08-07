@@ -3,7 +3,12 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-/// 게임 아트워크 조회. Steam 로컬 캐시를 먼저 뒤지고, 없으면 Steam CDN에서 받아 캐싱한다.
+/// 게임 아트워크 조회.
+///
+/// Steam이 이미 디스크에 받아둔 아트워크만 읽는다. 원격에서 받아오는 경로는
+/// 일부러 두지 않았다. 커버를 CDN에서 받으려면 URL에 appid를 실어 보내야 하고,
+/// 그건 보유 게임 목록을 밖으로 흘리는 것과 같다. 아트워크가 없는 게임은
+/// 제목 타일로 표시하고, Steam을 한 번 열면 Steam이 알아서 캐시를 채운다.
 enum Artwork {
     enum Kind {
         /// 600x900 세로 포스터 (그리드용)
@@ -11,7 +16,7 @@ enum Artwork {
         /// 460x215 가로 헤더 (아이콘 폴백용)
         case header
 
-        var localNames: [String] {
+        var fileNames: [String] {
             switch self {
             case .portrait:
                 return ["library_600x900.jpg", "library_600x900.png",
@@ -21,21 +26,7 @@ enum Artwork {
                         "header.jpg", "header.png"]
             }
         }
-
-        var remoteNames: [String] {
-            switch self {
-            case .portrait: return ["library_600x900.jpg", "library_capsule.jpg"]
-            case .header: return ["library_header.jpg", "header.jpg"]
-            }
-        }
     }
-
-    static var cacheDir: URL = {
-        let dir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/SteamShelf/covers")
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
-    }()
 
     // MARK: - 조회
 
@@ -51,37 +42,16 @@ enum Artwork {
             for case let url as URL in walker {
                 found[url.lastPathComponent.lowercased()] = url
             }
-            for name in kind.localNames {
+            for name in kind.fileNames {
                 if let hit = found[name] { return hit }
             }
         }
         return nil
     }
 
-    private static func downloadedURL(appID: String, kind: Kind) -> URL {
-        let suffix = kind == .portrait ? "portrait" : "header"
-        return cacheDir.appendingPathComponent("\(appID)_\(suffix).jpg")
-    }
-
-    /// 로컬 → 다운로드 캐시 → CDN 순으로 이미지를 확보한다. (동기, 백그라운드에서 호출할 것)
-    static func imageURL(appID: String, kind: Kind) -> URL? {
-        if let local = localURL(appID: appID, kind: kind) { return local }
-
-        let cached = downloadedURL(appID: appID, kind: kind)
-        if FileManager.default.fileExists(atPath: cached.path) { return cached }
-
-        for name in kind.remoteNames {
-            let remote = "https://cdn.cloudflare.steamstatic.com/steam/apps/\(appID)/\(name)"
-            guard let url = URL(string: remote),
-                  let data = try? Data(contentsOf: url), data.count > 1024 else { continue }
-            try? data.write(to: cached)
-            return cached
-        }
-        return nil
-    }
-
+    /// 디스크에 있는 아트워크만 읽는다. (동기, 백그라운드에서 호출할 것)
     static func image(appID: String, kind: Kind) -> NSImage? {
-        guard let url = imageURL(appID: appID, kind: kind) else { return nil }
+        guard let url = localURL(appID: appID, kind: kind) else { return nil }
         return NSImage(contentsOf: url)
     }
 

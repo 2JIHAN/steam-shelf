@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 APP_NAME="Steam Shelf"
-VERSION="${VERSION:-1.0.0}"
+VERSION="${VERSION:-1.1.0}"
 ARCHS="${ARCHS:-arm64 x86_64}"
 DEST="${1:-$HOME/Applications}"
 APP="$DEST/$APP_NAME.app"

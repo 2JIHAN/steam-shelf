@@ -26,7 +26,7 @@ Steam Shelf shows every installed Steam game as a cover-art grid. Click a tile t
 
 ## Features
 
-- **Cover-art grid** — artwork comes from Steam's local cache, so it works offline. Missing art is fetched once from the Steam CDN.
+- **Cover-art grid** — artwork is read from Steam's own on-disk cache. Games Steam has no art for show a title tile.
 - **One-click launch** — opens `steam://rungameid/<appid>`, so cloud saves, playtime, and the overlay keep working.
 - **Per-game `.app` shortcuts** with cover-art icons, ready for Launchpad and Spotlight.
 - **Safe cleanup** — shortcuts for uninstalled games go to the Trash, and only bundles Steam Shelf can prove it manages are touched.
@@ -34,6 +34,7 @@ Steam Shelf shows every installed Steam game as a cover-art grid. Click a tile t
 - **Multiple libraries**, including external drives.
 - **Search and sort** by last played, name, or size.
 - **Four languages** — English, 한국어, 日本語, 简体中文.
+- **No network** — the app opens no connections at all. See below.
 
 ## Requirements
 
@@ -83,6 +84,26 @@ Sync recognizes only two kinds of bundle as its own:
 
 Everything else in `~/Applications` is left alone. If a normal app already has the name a game wants, that game is skipped and reported instead of overwritten. Shortcuts for uninstalled games go to the Trash, so they stay recoverable.
 
+## No Network
+
+Steam Shelf opens no network connections. It reads Steam's files on disk and launches games through a URL scheme; nothing is sent anywhere, and there is no telemetry, update check, or artwork download.
+
+Run the checks yourself:
+
+```bash
+./verify-no-network.sh --runtime
+```
+
+| Layer | Check |
+|---|---|
+| Source | No `URLSession`, `NWConnection`, or sockets. No remote URL outside the allowlist |
+| Binary | `CFNetwork` and `Network.framework` are not linked, no networking symbols referenced |
+| Runtime | The running app holds zero open sockets |
+
+The binary check is the one that matters: source greps can be worked around, but any code that reaches the network pulls in `CFNetwork`, and that shows up in `otool -L`. CI runs the static layers on every push.
+
+One allowlisted URL exists — `store.steampowered.com`, used by the right-click **Open Store Page** item. That hands the URL to your browser through `NSWorkspace`; the app itself never connects.
+
 ## Languages
 
 The interface follows your system language and falls back to English. To add one, copy `Resources/en.lproj/Localizable.strings` to `Resources/<code>.lproj/`, translate the right-hand side of each line, and add the code to `CFBundleLocalizations` in `build.sh`. No Swift changes needed.
@@ -95,12 +116,13 @@ Sources/
   ContentView.swift    Grid UI, game tiles, sync report wording
   Store.swift          State, cover loading, folder watching
   SteamLibrary.swift   Library and manifest scanning
-  Artwork.swift        Cover lookup, CDN fallback, .icns generation
+  Artwork.swift        Cover lookup and .icns generation
   ShortcutSync.swift   .app shortcut creation and cleanup
   VDF.swift            Steam KeyValues parser
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               Build script
 release.sh             Signs, notarizes, and packages a release
+verify-no-network.sh   Checks that the app opens no connections
 ```
 
 ## FAQ

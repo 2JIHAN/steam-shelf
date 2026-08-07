@@ -26,7 +26,7 @@ Steam Shelf는 설치된 Steam 게임을 커버아트 그리드로 보여줍니�
 
 ## 주요 기능
 
-- **커버아트 그리드** — Steam의 로컬 캐시를 쓰므로 오프라인에서도 동작합니다. 없는 아트만 Steam CDN에서 한 번 받습니다.
+- **커버아트 그리드** — Steam이 디스크에 받아둔 아트워크를 읽습니다. Steam에 아트가 없는 게임은 제목 타일로 표시됩니다.
 - **클릭 한 번으로 실행** — `steam://rungameid/<appid>`를 열기 때문에 클라우드 세이브, 플레이 시간, 오버레이가 그대로 동작합니다.
 - **게임별 `.app` 바로가기** — 커버아트 아이콘이 붙어 Launchpad·Spotlight에서 바로 실행됩니다.
 - **안전한 정리** — 삭제된 게임의 바로가기는 휴지통으로 가고, Steam Shelf가 자기 것이라고 증명할 수 있는 번들만 건드립니다.
@@ -34,6 +34,7 @@ Steam Shelf는 설치된 Steam 게임을 커버아트 그리드로 보여줍니�
 - **다중 라이브러리** — 외장 드라이브 포함.
 - **검색과 정렬** — 최근 플레이·이름·용량 순.
 - **4개 언어** — English, 한국어, 日本語, 简体中文.
+- **네트워크 미사용** — 어떤 연결도 열지 않습니다. 아래 참고.
 
 ## 요구 사항
 
@@ -83,6 +84,26 @@ Swift 6 (Xcode Command Line Tools)가 필요합니다. 서명된 릴리스를 �
 
 `~/Applications`의 나머지 앱은 건드리지 않습니다. 게임이 쓰려는 이름을 일반 앱이 이미 차지하고 있으면 덮어쓰지 않고 건너뛴 뒤 결과에 표시합니다. 삭제된 게임의 바로가기는 휴지통으로 가므로 복구할 수 있습니다.
 
+## 네트워크 미사용
+
+Steam Shelf는 네트워크 연결을 열지 않습니다. 디스크에 있는 Steam 파일을 읽고 URL 스킴으로 게임을 실행할 뿐, 밖으로 나가는 것이 없습니다. 텔레메트리도, 업데이트 확인도, 아트워크 다운로드도 없습니다.
+
+직접 검사해보실 수 있습니다.
+
+```bash
+./verify-no-network.sh --runtime
+```
+
+| 층 | 검사 |
+|---|---|
+| 소스 | `URLSession`·`NWConnection`·소켓 없음. 허용 목록 밖의 원격 주소 없음 |
+| 바이너리 | `CFNetwork`·`Network.framework` 링크 없음, 네트워킹 심볼 참조 없음 |
+| 실행 중 | 실행된 앱이 연 소켓 0개 |
+
+핵심은 바이너리 검사입니다. 소스 grep은 우회할 수 있지만, 네트워크에 닿는 코드는 어떤 경로로 짜든 `CFNetwork`를 끌고 오고 그건 `otool -L`에 드러납니다. CI가 푸시마다 정적 검사를 돌립니다.
+
+허용 목록에 든 주소는 하나뿐입니다 — 우클릭 메뉴의 **상점 페이지 열기**가 쓰는 `store.steampowered.com`. `NSWorkspace`로 URL을 브라우저에 넘기는 것이라 앱 자신은 접속하지 않습니다.
+
 ## 지원 언어
 
 시스템 언어를 따르고, 없는 언어는 영어로 표시됩니다. 언어를 추가하려면 `Resources/en.lproj/Localizable.strings`를 `Resources/<코드>.lproj/`로 복사해 각 줄의 오른쪽만 번역하고, `build.sh`의 `CFBundleLocalizations`에 코드를 추가하면 됩니다. Swift 코드는 손댈 필요가 없습니다.
@@ -95,12 +116,13 @@ Sources/
   ContentView.swift    그리드 UI, 게임 타일, 동기화 결과 문장
   Store.swift          상태 관리, 커버 로딩, 폴더 감시
   SteamLibrary.swift   라이브러리·매니페스트 스캔
-  Artwork.swift        커버 조회, CDN 폴백, .icns 생성
+  Artwork.swift        커버 조회, .icns 생성
   ShortcutSync.swift   .app 바로가기 생성과 정리
   VDF.swift            Steam KeyValues 파서
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               빌드 스크립트
 release.sh             서명·공증·패키징
+verify-no-network.sh   네트워크 연결이 없는지 검사
 ```
 
 ## 자주 묻는 질문

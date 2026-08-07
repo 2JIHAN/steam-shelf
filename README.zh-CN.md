@@ -26,7 +26,7 @@ Steam Shelf 把已安装的 Steam 游戏以封面图网格呈现。点击封面�
 
 ## 功能
 
-- **封面图网格** —— 使用 Steam 的本地缓存，离线可用；仅缺失的封面会从 Steam CDN 下载一次。
+- **封面图网格** —— 读取 Steam 已存在磁盘上的封面。Steam 没有封面的游戏显示为标题卡片。
 - **一键启动** —— 打开 `steam://rungameid/<appid>`，云存档、游戏时长和覆盖层照常工作。
 - **逐游戏 `.app` 快捷方式** —— 附带封面图标，可直接从启动台和聚焦搜索启动。
 - **安全清理** —— 已卸载游戏的快捷方式移到废纸篓，且只处理 Steam Shelf 能确认由自己管理的包。
@@ -34,6 +34,7 @@ Steam Shelf 把已安装的 Steam 游戏以封面图网格呈现。点击封面�
 - **多库支持** —— 包括外置硬盘。
 - **搜索与排序** —— 按最近游玩、名称或占用空间。
 - **四种语言** —— English、한국어、日本語、简体中文。
+- **不使用网络** —— 不建立任何连接。详见下文。
 
 ## 环境要求
 
@@ -83,6 +84,26 @@ ARCHS=arm64 ./build.sh            # 跳过 Intel 切片
 
 `~/Applications` 中的其他应用一概不动。如果某个普通应用已占用游戏想用的名字，该游戏会被跳过并在结果中列出，而不会被覆盖。已卸载游戏的快捷方式进入废纸篓，可以恢复。
 
+## 不使用网络
+
+Steam Shelf 不会建立任何网络连接。它只读取磁盘上 Steam 的文件，并通过 URL scheme 启动游戏，没有任何数据外发，也没有遥测、更新检查或封面下载。
+
+你可以自己验证：
+
+```bash
+./verify-no-network.sh --runtime
+```
+
+| 层 | 检查 |
+|---|---|
+| 源码 | 没有 `URLSession`、`NWConnection` 或套接字；没有白名单之外的远程地址 |
+| 二进制 | 未链接 `CFNetwork` 和 `Network.framework`，未引用网络相关符号 |
+| 运行时 | 运行中的应用打开的套接字为 0 |
+
+关键在于二进制这一层。源码 grep 可以绕过，但只要代码触达网络，无论怎么写都会引入 `CFNetwork`，而它会出现在 `otool -L` 中。CI 在每次 push 时运行静态检查。
+
+白名单里只有一个地址——右键菜单**打开商店页面**使用的 `store.steampowered.com`。它通过 `NSWorkspace` 把 URL 交给浏览器，应用自身不会连接。
+
 ## 支持的语言
 
 界面跟随系统语言，未覆盖的语言回退到英语。若要新增语言，把 `Resources/en.lproj/Localizable.strings` 复制到 `Resources/<语言代码>.lproj/`，只翻译每行等号右侧的内容，再把语言代码加入 `build.sh` 的 `CFBundleLocalizations`。无需改动 Swift 代码。
@@ -95,12 +116,13 @@ Sources/
   ContentView.swift    网格界面、游戏卡片、同步结果文案
   Store.swift          状态管理、封面加载、目录监听
   SteamLibrary.swift   游戏库与清单扫描
-  Artwork.swift        封面查找、CDN 回退、.icns 生成
+  Artwork.swift        封面查找与 .icns 生成
   ShortcutSync.swift   .app 快捷方式的创建与清理
   VDF.swift            Steam KeyValues 解析器
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               构建脚本
 release.sh             签名、公证与打包
+verify-no-network.sh   检查是否存在网络连接
 ```
 
 ## 常见问题
