@@ -20,6 +20,8 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 720, minHeight: 480)
+        .navigationTitle("Steam Shelf")
+        .navigationSubtitle(subtitle)
         .toolbar { toolbarItems }
         .searchable(text: $store.searchText, placement: .toolbar, prompt: "게임 검색")
         .onAppear { store.refresh() }
@@ -80,13 +82,16 @@ struct ContentView: View {
         }
     }
 
+    /// 창 제목 옆에 붙는 요약. 검색 중이면 필터 결과 수를 보여준다.
+    private var subtitle: String {
+        let shown = store.visibleGames.count
+        let total = store.games.count
+        guard total > 0 else { return "" }
+        return shown == total ? "게임 \(total)개" : "게임 \(shown)개 / 전체 \(total)개"
+    }
+
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            Text("\(store.visibleGames.count)개 게임")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
         ToolbarItem {
             Picker("정렬", selection: $store.sortOrder) {
                 ForEach(SortOrder.allCases) { Text($0.rawValue).tag($0) }

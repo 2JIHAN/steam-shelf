@@ -22,7 +22,9 @@ Steam Shelf reads your local Steam library and shows every installed game as a c
 
 It is a single SwiftUI binary with no third-party dependencies, built by one `swiftc` call. There is no Xcode project to open.
 
-<!-- Add a screenshot here: docs/screenshot.png -->
+<div align="center">
+  <img src="docs/screenshot.png" width="100%" alt="Steam Shelf showing an installed Steam library as a cover-art grid">
+</div>
 
 ## Features
 

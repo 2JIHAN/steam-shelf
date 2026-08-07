@@ -22,7 +22,9 @@ Steam Shelf 读取本地 Steam 库，把所有已安装的游戏以封面图网�
 
 它是一个没有第三方依赖的单一 SwiftUI 二进制文件，一条 `swiftc` 命令即可构建，也没有需要打开的 Xcode 工程。
 
-<!-- 在此放置截图：docs/screenshot.png -->
+<div align="center">
+  <img src="docs/screenshot.png" width="100%" alt="Steam Shelf 以封面图网格展示已安装的 Steam 游戏">
+</div>
 
 ## 功能
 

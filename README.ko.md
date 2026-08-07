@@ -22,7 +22,9 @@ Steam Shelf는 로컬 Steam 라이브러리를 읽어 설치된 모든 게임을
 
 외부 의존성 없는 단일 SwiftUI 바이너리이며, `swiftc` 한 번으로 빌드됩니다. 열어야 할 Xcode 프로젝트도 없습니다.
 
-<!-- 스크린샷 자리: docs/screenshot.png -->
+<div align="center">
+  <img src="docs/screenshot.png" width="100%" alt="설치된 Steam 게임을 커버아트 그리드로 보여주는 Steam Shelf">
+</div>
 
 ## 주요 기능
 
