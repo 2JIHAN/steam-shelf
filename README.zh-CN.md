@@ -50,15 +50,15 @@ Steam Shelf 读取本地 Steam 库，把所有已安装的游戏以封面图网�
 
 ### 下载
 
-从[最新发行版](https://github.com/2JIHAN/steam-shelf/releases/latest)下载 `SteamShelf-x.y.z-universal.zip`，解压后把 **Steam Shelf.app** 移动到「应用程序」文件夹。
+从[最新发行版](https://github.com/2JIHAN/steam-shelf/releases/latest)下载 `SteamShelf-x.y.z-universal.zip`，解压后把 **Steam Shelf.app** 拖到「应用程序」文件夹，直接打开即可。
 
-该应用只做了 ad-hoc 签名，**未经过公证（notarization）**，因此首次打开时会被 macOS 拦截。清除一次隔离属性即可：
+发行版使用 Developer ID 证书签名并通过了 Apple 公证（notarization），公证票据已装订到应用包内，因此 Gatekeeper 会正常放行——不需要右键打开，不需要终端命令，验证时也不需要联网。你可以自行确认：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+spctl -a -vv "/Applications/Steam Shelf.app"
+# accepted
+# source=Notarized Developer ID
 ```
-
-或者打开**系统设置 → 隐私与安全性**，找到关于 Steam Shelf 的提示，点击**仍要打开**。
 
 ### 从源码构建
 
@@ -75,7 +75,13 @@ cd steam-shelf
 ARCHS=arm64 ./build.sh            # 跳过 Intel 切片，构建更快
 ```
 
-本机构建的应用不会带上隔离属性，Gatekeeper 不会拦截。
+本机构建的应用只做 ad-hoc 签名而非公证，但自己编译的文件不会带上隔离属性，所以没有影响。若要打包签名的发行版，需要 Developer ID 证书和公证凭据：
+
+```bash
+NOTARY_PROFILE=<notarytool 钥匙串配置名> ./release.sh
+```
+
+`release.sh` 会以 hardened runtime 签名、提交 Apple 公证、装订票据并重新打包。没有凭据时会回退到 ad-hoc 构建。
 
 ## 使用
 

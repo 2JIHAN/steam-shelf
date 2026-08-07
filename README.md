@@ -50,15 +50,15 @@ It is a single SwiftUI binary with no third-party dependencies, built by one `sw
 
 ### Download
 
-Get `SteamShelf-x.y.z-universal.zip` from the [latest release](https://github.com/2JIHAN/steam-shelf/releases/latest), unzip it, and move **Steam Shelf.app** into your Applications folder.
+Get `SteamShelf-x.y.z-universal.zip` from the [latest release](https://github.com/2JIHAN/steam-shelf/releases/latest), unzip it, drag **Steam Shelf.app** into your Applications folder, and open it.
 
-The app is ad-hoc signed but **not notarized**, so macOS blocks it the first time. Clear the quarantine flag once:
+Releases are signed with a Developer ID certificate and notarized by Apple, with the ticket stapled into the bundle, so Gatekeeper lets the app open normally — no right-click trick, no Terminal command, and no network needed for the check. You can confirm it yourself:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+spctl -a -vv "/Applications/Steam Shelf.app"
+# accepted
+# source=Notarized Developer ID
 ```
-
-Or open **System Settings → Privacy & Security**, find the message about Steam Shelf, and click **Open Anyway**.
 
 ### Build from source
 
@@ -75,7 +75,13 @@ The app lands in `~/Applications/Steam Shelf.app`. Pass a different directory to
 ARCHS=arm64 ./build.sh            # skip the Intel slice for faster iteration
 ```
 
-A local build carries no quarantine flag, so Gatekeeper stays quiet.
+A local build is ad-hoc signed rather than notarized, which is fine because compiling it yourself carries no quarantine flag. To cut a signed release you need a Developer ID certificate and notarization credentials:
+
+```bash
+NOTARY_PROFILE=<your notarytool keychain profile> ./release.sh
+```
+
+`release.sh` signs with hardened runtime, submits to Apple, staples the ticket, and re-zips. Without those credentials it falls back to an ad-hoc build.
 
 ## Usage
 

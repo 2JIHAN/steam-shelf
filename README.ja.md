@@ -50,15 +50,15 @@ Steam Shelf はローカルの Steam ライブラリを読み取り、インス�
 
 ### ダウンロード
 
-[最新リリース](https://github.com/2JIHAN/steam-shelf/releases/latest)から `SteamShelf-x.y.z-universal.zip` を入手し、展開して **Steam Shelf.app** をアプリケーションフォルダへ移動してください。
+[最新リリース](https://github.com/2JIHAN/steam-shelf/releases/latest)から `SteamShelf-x.y.z-universal.zip` を入手し、展開して **Steam Shelf.app** をアプリケーションフォルダへドラッグし、そのまま開いてください。
 
-このアプリは ad-hoc 署名のみで、**公証（notarization）を受けていません。** そのため初回起動時に macOS がブロックします。隔離属性を一度だけ外してください。
+リリースは Developer ID 証明書で署名され、Apple の公証（notarization）を通過し、チケットをバンドルにステープル済みです。そのため Gatekeeper は通常どおり起動を許可します。右クリックで開く操作も、ターミナルのコマンドも、確認のためのネットワークも不要です。自分で確認することもできます。
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+spctl -a -vv "/Applications/Steam Shelf.app"
+# accepted
+# source=Notarized Developer ID
 ```
-
-または **システム設定 → プライバシーとセキュリティ** を開き、Steam Shelf に関するメッセージから **このまま開く** をクリックします。
 
 ### ソースからビルド
 
@@ -75,7 +75,13 @@ cd steam-shelf
 ARCHS=arm64 ./build.sh            # Intel スライスを省いて高速ビルド
 ```
 
-自分でビルドしたアプリには隔離属性が付かないため、Gatekeeper に阻まれることはありません。
+自分でビルドしたアプリは公証ではなく ad-hoc 署名になりますが、自分でコンパイルしたものには隔離属性が付かないため問題ありません。署名済みリリースを作るには Developer ID 証明書と公証用の認証情報が必要です。
+
+```bash
+NOTARY_PROFILE=<notarytool のキーチェーンプロファイル名> ./release.sh
+```
+
+`release.sh` は hardened runtime で署名し、Apple に提出し、チケットをステープルしてから再圧縮します。認証情報がない場合は ad-hoc ビルドにフォールバックします。
 
 ## 使い方
 

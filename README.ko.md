@@ -50,15 +50,15 @@ Steam Shelf는 로컬 Steam 라이브러리를 읽어 설치된 모든 게임을
 
 ### 다운로드
 
-[최신 릴리스](https://github.com/2JIHAN/steam-shelf/releases/latest)에서 `SteamShelf-x.y.z-universal.zip`을 받아 압축을 풀고, **Steam Shelf.app**을 응용 프로그램 폴더로 옮기세요.
+[최신 릴리스](https://github.com/2JIHAN/steam-shelf/releases/latest)에서 `SteamShelf-x.y.z-universal.zip`을 받아 압축을 풀고, **Steam Shelf.app**을 응용 프로그램 폴더로 옮긴 뒤 실행하세요.
 
-이 앱은 ad-hoc 서명만 되어 있고 **공증(notarization)은 받지 않았습니다.** 그래서 처음 실행할 때 macOS가 막습니다. 격리 속성을 한 번 제거하면 됩니다.
+릴리스는 Developer ID 인증서로 서명하고 Apple 공증까지 마쳤으며, 티켓을 번들에 스테이플해 뒀습니다. 그래서 Gatekeeper가 그냥 열어줍니다 — 우클릭으로 열기도, 터미널 명령도, 확인을 위한 네트워크도 필요 없습니다. 직접 확인해보실 수 있습니다.
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Steam Shelf.app"
+spctl -a -vv "/Applications/Steam Shelf.app"
+# accepted
+# source=Notarized Developer ID
 ```
-
-또는 **시스템 설정 → 개인 정보 보호 및 보안**에서 Steam Shelf 관련 메시지를 찾아 **그래도 열기**를 누르세요.
 
 ### 소스에서 빌드
 
@@ -75,7 +75,13 @@ cd steam-shelf
 ARCHS=arm64 ./build.sh            # Intel 슬라이스를 빼고 빠르게 빌드
 ```
 
-직접 빌드한 앱에는 격리 속성이 붙지 않아 Gatekeeper가 막지 않습니다.
+직접 빌드한 앱은 공증 대신 ad-hoc 서명만 됩니다. 본인이 컴파일한 것에는 격리 속성이 붙지 않으니 문제되지 않습니다. 서명된 릴리스를 만들려면 Developer ID 인증서와 공증 자격증명이 필요합니다.
+
+```bash
+NOTARY_PROFILE=<notarytool 키체인 프로필 이름> ./release.sh
+```
+
+`release.sh`가 hardened runtime으로 서명하고, Apple에 제출하고, 티켓을 스테이플한 뒤 다시 압축합니다. 자격증명이 없으면 ad-hoc 빌드로 넘어갑니다.
 
 ## 사용법
 
