@@ -43,3 +43,5 @@
 "%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — 同名のアプリが既に存在し、Steam のショートカットではありません";
 "%1$@ — could not be created: %2$@" = "%1$@ — 作成できませんでした: %2$@";
 "%1$@ — could not be removed: %2$@" = "%1$@ — 削除できませんでした: %2$@";
+
+"A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up." = "Steam ライブラリの一つを読み取れなかったため、アンインストールされたように見えるゲームのショートカットはそのままにしました。ドライブを再接続してから同期し直すと整理されます。";

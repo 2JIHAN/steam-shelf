@@ -47,8 +47,17 @@ enum SteamLibrary {
         "1628350", // Steam Linux Runtime - Sniper
     ]
 
-    /// libraryfolders.vdf 를 따라 모든 라이브러리 루트를 수집한다.
-    static func libraryRoots() -> [URL] {
+    /// 스캔 결과. 라이브러리 하나라도 못 읽었으면 목록이 불완전하다는 뜻이고,
+    /// 그 상태로 바로가기를 정리하면 멀쩡한 게임의 바로가기를 지우게 된다.
+    struct Scan {
+        let games: [Game]
+        let missingRoots: [URL]
+        var isComplete: Bool { missingRoots.isEmpty }
+    }
+
+    /// libraryfolders.vdf 가 가리키는 루트 중 지금 접근 가능한 것과 그렇지 않은 것.
+    /// 외장 드라이브를 빼두면 그 루트는 missing 으로 잡힌다.
+    static func libraryRootsWithMissing() -> (present: [URL], missing: [URL]) {
         var roots: [URL] = [steamRoot]
         let vdf = steamRoot.appendingPathComponent("steamapps/libraryfolders.vdf")
         if let node = VDF.parse(contentsOf: vdf), let folders = node["libraryfolders"] {
@@ -60,17 +69,27 @@ enum SteamLibrary {
                 }
             }
         }
-        return roots.filter { FileManager.default.fileExists(atPath: $0.path) }
+        let fm = FileManager.default
+        return (roots.filter { fm.fileExists(atPath: $0.path) },
+                roots.filter { !fm.fileExists(atPath: $0.path) })
     }
 
-    static func installedGames() -> [Game] {
-        let fm = FileManager.default
-        var games: [String: Game] = [:]
+    static func libraryRoots() -> [URL] { libraryRootsWithMissing().present }
 
-        for root in libraryRoots() {
+    static func scan() -> Scan {
+        let fm = FileManager.default
+        let (present, missing) = libraryRootsWithMissing()
+        var games: [String: Game] = [:]
+        var unreadable = missing
+
+        for root in present {
             let steamapps = root.appendingPathComponent("steamapps")
             guard let entries = try? fm.contentsOfDirectory(
-                at: steamapps, includingPropertiesForKeys: nil) else { continue }
+                at: steamapps, includingPropertiesForKeys: nil) else {
+                // 루트는 있는데 steamapps 를 못 읽는 경우도 불완전한 스캔이다.
+                unreadable.append(root)
+                continue
+            }
 
             for entry in entries where entry.lastPathComponent.hasPrefix("appmanifest_")
                 && entry.pathExtension == "acf" {
@@ -101,7 +120,7 @@ enum SteamLibrary {
                 )
             }
         }
-        return Array(games.values)
+        return Scan(games: Array(games.values), missingRoots: unreadable)
     }
 
     static func launch(_ game: Game) {

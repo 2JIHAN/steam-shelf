@@ -30,6 +30,10 @@ final class Store: ObservableObject {
     @Published var isSyncing = false
     @Published var syncReport: ShortcutSync.Report?
     @Published var launchedGameID: String?
+    /// 한 번이라도 스캔이 끝났는지, 그리고 그 스캔이 모든 라이브러리를 읽었는지.
+    /// 둘 다 참일 때만 바로가기 회수를 허용한다.
+    @Published private(set) var scanned = false
+    @Published private(set) var libraryComplete = false
 
     private var watchers: [DispatchSourceFileSystemObject] = []
     private var reloadTask: Task<Void, Never>?
@@ -63,10 +67,13 @@ final class Store: ObservableObject {
         guard !isLoading else { return }
         isLoading = true
         Task {
-            let found = await Task.detached(priority: .userInitiated) {
-                SteamLibrary.installedGames()
+            let scan = await Task.detached(priority: .userInitiated) {
+                SteamLibrary.scan()
             }.value
+            let found = scan.games
             self.games = found
+            self.libraryComplete = scan.isComplete
+            self.scanned = true
             self.isLoading = false
             self.loadCovers(for: found)
             self.startWatching()
@@ -96,13 +103,17 @@ final class Store: ObservableObject {
 
     // MARK: - 바로가기 동기화
 
+    /// 스캔이 끝나기 전이나 Steam 이 없을 때는 동기화할 근거가 없다.
+    var canSync: Bool { scanned && !games.isEmpty }
+
     func syncShortcuts() {
-        guard !isSyncing else { return }
+        guard !isSyncing, canSync else { return }
         isSyncing = true
         let snapshot = games
+        let mayReap = scanned && libraryComplete
         Task {
             let report = await Task.detached(priority: .userInitiated) {
-                ShortcutSync.sync(games: snapshot)
+                ShortcutSync.sync(games: snapshot, mayReap: mayReap)
             }.value
             self.syncReport = report
             self.isSyncing = false
@@ -131,9 +142,11 @@ final class Store: ObservableObject {
         reloadTask = Task {
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             guard !Task.isCancelled else { return }
-            let found = await Task.detached(priority: .utility) {
-                SteamLibrary.installedGames()
+            let scan = await Task.detached(priority: .utility) {
+                SteamLibrary.scan()
             }.value
+            let found = scan.games
+            self.libraryComplete = scan.isComplete
             guard Set(found.map(\.appID)) != Set(self.games.map(\.appID)) else { return }
             self.games = found
             self.loadCovers(for: found)

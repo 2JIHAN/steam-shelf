@@ -21,6 +21,7 @@ struct SteamShelfApp: App {
                     .keyboardShortcut("r", modifiers: .command)
                 Button("Sync Shortcuts") { store.syncShortcuts() }
                     .keyboardShortcut("s", modifiers: [.command, .shift])
+                    .disabled(store.isSyncing || !store.canSync)
             }
         }
     }

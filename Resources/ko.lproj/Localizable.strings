@@ -43,3 +43,5 @@
 "%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — 같은 이름의 앱이 이미 있고 Steam 바로가기가 아님";
 "%1$@ — could not be created: %2$@" = "%1$@ — 생성 실패: %2$@";
 "%1$@ — could not be removed: %2$@" = "%1$@ — 삭제 실패: %2$@";
+
+"A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up." = "Steam 라이브러리 하나를 읽지 못해, 삭제된 것처럼 보이는 게임의 바로가기는 건드리지 않았습니다. 드라이브를 다시 연결하고 동기화하면 정리됩니다.";

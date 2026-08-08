@@ -43,3 +43,5 @@
 "%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — an app with that name already exists and is not a Steam shortcut";
 "%1$@ — could not be created: %2$@" = "%1$@ — could not be created: %2$@";
 "%1$@ — could not be removed: %2$@" = "%1$@ — could not be removed: %2$@";
+
+"A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up." = "A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up.";

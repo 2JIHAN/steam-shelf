@@ -127,7 +127,7 @@ struct ContentView: View {
                     Label("Sync Shortcuts", systemImage: "square.and.arrow.down.on.square")
                 }
             }
-            .disabled(store.isSyncing || store.games.isEmpty)
+            .disabled(store.isSyncing || !store.canSync)
             .help("Creates a .app shortcut in ~/Applications for every installed game, and moves shortcuts for uninstalled games to the Trash.")
         }
     }
@@ -139,10 +139,17 @@ struct ContentView: View {
 /// 언어마다 어순이 다르므로 조립을 코드가 아니라 포맷 문자열에 맡긴다.
 enum SyncReportFormatter {
     static func message(_ report: ShortcutSync.Report) -> String {
-        guard !report.isEmpty else {
-            return String(localized: "Nothing to change. Your shortcuts are already up to date.")
-        }
         var blocks: [String] = []
+        // A skipped reap is the one thing worth saying even when nothing else
+        // happened: the user asked for a tidy-up and did not get one.
+        if report.reapSkipped {
+            blocks.append(String(localized: "A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up."))
+        }
+        guard !report.isEmpty else {
+            return blocks.isEmpty
+                ? String(localized: "Nothing to change. Your shortcuts are already up to date.")
+                : blocks.joined(separator: "\n\n")
+        }
         appendBlock(&blocks, "Created (%lld)", report.created)
         appendBlock(&blocks, "Updated (%lld)", report.updated)
         appendBlock(&blocks, "Moved to Trash (%lld)", report.removed)

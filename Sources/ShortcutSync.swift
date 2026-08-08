@@ -24,6 +24,8 @@ enum ShortcutSync {
         var updated: [String] = []
         var removed: [String] = []
         var skipped: [Skipped] = []
+        /// 스캔이 불완전해 회수 단계를 건너뛴 경우.
+        var reapSkipped = false
 
         var isEmpty: Bool {
             created.isEmpty && updated.isEmpty && removed.isEmpty && skipped.isEmpty
@@ -84,7 +86,11 @@ enum ShortcutSync {
 
     // MARK: - 동기화
 
-    static func sync(games: [Game]) -> Report {
+    /// - Parameter mayReap: 라이브러리 스캔이 완전할 때만 true. false면 바로가기를
+    ///   만들고 갱신하기만 하고, 삭제된 게임의 바로가기 회수는 건너뛴다.
+    ///   외장 드라이브를 빼둔 채로 동기화하면 그 드라이브의 게임이 목록에서
+    ///   빠지는데, 그걸 "삭제됨"으로 읽으면 멀쩡한 바로가기를 지우게 된다.
+    static func sync(games: [Game], mayReap: Bool) -> Report {
         var report = Report()
         let fm = FileManager.default
         let existing = managedBundles()
@@ -125,6 +131,11 @@ enum ShortcutSync {
         }
 
         // 2) 설치되지 않은 게임의 바로가기 → 휴지통
+        guard mayReap else {
+            report.reapSkipped = true
+            NSWorkspace.shared.noteFileSystemChanged(applicationsDir.path)
+            return report
+        }
         for bundle in existing where !installedIDs.contains(bundle.appID) {
             let name = bundle.url.deletingPathExtension().lastPathComponent
             do {

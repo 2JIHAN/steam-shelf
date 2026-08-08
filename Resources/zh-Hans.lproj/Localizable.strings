@@ -43,3 +43,5 @@
 "%@ — an app with that name already exists and is not a Steam shortcut" = "%@ — 同名应用已存在，且不是 Steam 快捷方式";
 "%1$@ — could not be created: %2$@" = "%1$@ — 创建失败：%2$@";
 "%1$@ — could not be removed: %2$@" = "%1$@ — 删除失败：%2$@";
+
+"A Steam library could not be read, so shortcuts for games that look uninstalled were left alone. Reconnect the drive and sync again to tidy them up." = "有一个 Steam 库无法读取，因此看起来已卸载的游戏的快捷方式未被处理。重新连接该驱动器后再次同步即可清理。";
