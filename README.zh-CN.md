@@ -89,10 +89,11 @@ ARCHS=arm64 ./build.sh            # 跳过 Intel 切片
 
 Steam Shelf 不会建立任何网络连接。这一点由 [stays local](https://github.com/2JIHAN/stays-local) 认证——它在自己的 CI 中构建本仓库，并扫描包内每一个 Mach-O。它只读取磁盘上 Steam 的文件，并通过 URL scheme 启动游戏，没有任何数据外发，也没有遥测、更新检查或封面下载。
 
-你可以自己验证：
+你可以自己验证——与徽章依据的是同一项检查：
 
 ```bash
-./verify-no-network.sh --runtime
+git clone https://github.com/2JIHAN/stays-local.git
+./stays-local/verify.sh /path/to/steam-shelf --runtime
 ```
 
 | 层 | 检查 |
@@ -123,7 +124,6 @@ Sources/
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               构建脚本
 release.sh             签名、公证与打包
-verify-no-network.sh   检查是否存在网络连接
 ```
 
 ## 常见问题

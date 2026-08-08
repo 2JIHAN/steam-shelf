@@ -1,0 +1,19 @@
+name: stays local
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # Run the scheme's own verifier rather than a copy of it. A subject that
+      # keeps its own version of the check ends up grading itself against
+      # slightly different rules than the badge it carries.
+      - uses: actions/checkout@v4
+        with:
+          repository: 2JIHAN/stays-local
+          path: .stays-local
+      - run: ./.stays-local/verify.sh . --runtime

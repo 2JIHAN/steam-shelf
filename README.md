@@ -89,10 +89,11 @@ Everything else in `~/Applications` is left alone. If a normal app already has t
 
 Steam Shelf opens no network connections. This is certified by [stays local](https://github.com/2JIHAN/stays-local), which builds this repository in its own CI and scans every Mach-O in the bundle. It reads Steam's files on disk and launches games through a URL scheme; nothing is sent anywhere, and there is no telemetry, update check, or artwork download.
 
-Run the checks yourself:
+Run the check yourself — the same one the badge comes from:
 
 ```bash
-./verify-no-network.sh --runtime
+git clone https://github.com/2JIHAN/stays-local.git
+./stays-local/verify.sh /path/to/steam-shelf --runtime
 ```
 
 | Layer | Check |
@@ -123,7 +124,6 @@ Sources/
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               Build script
 release.sh             Signs, notarizes, and packages a release
-verify-no-network.sh   Checks that the app opens no connections
 ```
 
 ## FAQ

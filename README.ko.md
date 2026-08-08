@@ -89,10 +89,11 @@ Swift 6 (Xcode Command Line Tools)가 필요합니다. 서명된 릴리스를 �
 
 Steam Shelf는 네트워크 연결을 열지 않습니다. [stays local](https://github.com/2JIHAN/stays-local)이 이 저장소를 자체 CI에서 빌드해 번들의 모든 Mach-O를 검사하고 인증합니다. 디스크에 있는 Steam 파일을 읽고 URL 스킴으로 게임을 실행할 뿐, 밖으로 나가는 것이 없습니다. 텔레메트리도, 업데이트 확인도, 아트워크 다운로드도 없습니다.
 
-직접 검사해보실 수 있습니다.
+직접 검사해보실 수 있습니다 — 배지가 나오는 것과 같은 검사입니다.
 
 ```bash
-./verify-no-network.sh --runtime
+git clone https://github.com/2JIHAN/stays-local.git
+./stays-local/verify.sh /path/to/steam-shelf --runtime
 ```
 
 | 층 | 검사 |
@@ -123,7 +124,6 @@ Sources/
 Resources/             en, ko, ja, zh-Hans .lproj
 build.sh               빌드 스크립트
 release.sh             서명·공증·패키징
-verify-no-network.sh   네트워크 연결이 없는지 검사
 ```
 
 ## 자주 묻는 질문
